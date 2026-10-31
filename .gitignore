@@ -1,0 +1,4 @@
+.test-profile-*/
+tests/.failed-dom.html
+dist/
+__pycache__/

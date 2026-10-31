@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>Filee Companion — 官方版全链路测试</title>
+<style>body{font:18px system-ui;margin:32px;background:#f5f7fa;color:#172238}section{display:flex;gap:32px}article{padding:20px;background:white;border-radius:16px}svg,img,video{width:240px;height:160px;object-fit:contain}button{padding:12px;margin:12px 0}pre{white-space:pre-wrap;padding:20px;background:white}small{display:block}</style>
+<h1>Filee 官方版 + 独立插件测试</h1>
+<p>按住 Ctrl 拖拽下列素材，在 Filee 圆盘选择 PNG / PDF / 视频格式。原文件下载：右键素材 → Filee：原文件另存为。</p>
+<section>
+<article><h2>1. SVG 图案</h2><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 160" style="color:#4361ee"><defs><linearGradient id="g"><stop stop-color="#4cc9f0"/><stop offset="1" stop-color="#4361ee"/></linearGradient></defs><rect x="10" y="10" width="220" height="140" rx="30" fill="url(#g)"/><path d="M70 80L105 115L175 45" fill="none" stroke="white" stroke-width="14"/></svg></article>
+<article><h2>2. PNG 图片</h2><img src="sample.png"></article>
+<article><h2>3. 视频切换</h2><video id="video" src="old.mp4" controls muted></video><br><button id="switch">切换到新视频（蓝色）</button><small id="address">old.mp4（红色）</small></article>
+</section>
+<h2>4. 选中完整 SVG 代码再 Ctrl 拖拽</h2>
+<pre id="code">&lt;svg xmlns="http://www.w3.org/2000/svg" width="120" height="80"&gt;&lt;rect width="120" height="80" fill="#23a679"/&gt;&lt;/svg&gt;</pre>
+<script>document.querySelector('#switch').onclick=()=>{document.querySelector('video').src='new.mp4?clip=blue&signature=preserved';document.querySelector('#address').textContent='new.mp4（蓝色）：现在拖拽应该得到蓝色视频';};</script>

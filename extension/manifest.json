@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Filee Browser Companion",
+  "version": "0.6.0",
+  "description": "Ctrl-drag website images, SVG and direct video links into official Filee. Independent community extension.",
+  "permissions": [
+    "scripting",
+    "contextMenus",
+    "downloads"
+  ],
+  "host_permissions": [
+    "https://*/*",
+    "http://*/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*/*",
+        "http://*/*"
+      ],
+      "js": [
+        "svg-drag.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Filee Companion: Ctrl + drag (click to activate this tab)"
+  }
+}

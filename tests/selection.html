@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><pre id="code" style="font:16px monospace;white-space:pre-wrap"></pre><pre id="results"></pre>
+<script src="../extension/svg-drag.js"></script><script>
+const results=[];
+function test(name,text,expected){
+ const code=document.querySelector('#code');code.textContent=text;
+ const range=document.createRange();range.selectNodeContents(code);getSelection().removeAllRanges();getSelection().addRange(range);
+ const b=range.getBoundingClientRect();document.dispatchEvent(new MouseEvent('mousemove',{clientX:b.x+5,clientY:b.y+5,ctrlKey:true}));
+ const o=document.querySelector('[title="Ctrl + drag to Filee"]'),d=new DataTransfer();o?.dispatchEvent(new DragEvent('dragstart',{ctrlKey:true,dataTransfer:d,bubbles:true}));
+ const uri=d.getData('text/uri-list');let good=!o;
+ if(expected){const xml=decodeURIComponent(uri.split(',').slice(1).join(','));const parsed=new DOMParser().parseFromString(xml,'image/svg+xml');good=uri.startsWith('data:image/svg+xml;')&&!parsed.querySelector('parsererror')&&parsed.querySelector('rect')&&!d.getData('DownloadURL');}
+ results.push({name,pass:!!good});o?.dispatchEvent(new DragEvent('dragend'));
+}
+test('complete SVG without namespace',' <svg width="20" height="20"><rect width="20" height="20" fill="red"/></svg> ',true);
+test('malformed SVG','<svg><rect></svg>',false);
+test('mixed HTML','<div><svg><rect/></svg></div>',false);
+test('several SVGs','<svg></svg><svg></svg>',false);
+test('escaped code','&lt;svg&gt;&lt;/svg&gt;',false);
+test('ordinary text','ordinary text',false);
+test('external image','<svg><image href="https://example.test/a.png"/></svg>',false);
+test('script','<svg><script>alert(1)<\/script></svg>',false);
+document.querySelector('#results').textContent=JSON.stringify(results);
+</script>

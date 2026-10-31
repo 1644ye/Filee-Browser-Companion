@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Exported SVG pixel regression</title>
+<svg id="drawing" xmlns="http://www.w3.org/2000/svg" width="240" height="160" viewBox="0 0 240 160" style="color:rgb(35,166,121)">
+<defs><linearGradient id="color-gradient"><stop stop-color="#4cc9f0"/><stop offset="1" stop-color="#4361ee"/></linearGradient></defs>
+<rect width="240" height="80" fill="url(#color-gradient)"/>
+<rect y="80" width="240" height="80" fill="currentColor"/></svg><pre id="results"></pre>
+<script src="../extension/svg-drag.js"></script><script>
+(async()=>{
+const results=[]; const check=(name,pass)=>results.push({name,pass:!!pass});
+try {
+ const svg=document.querySelector('#drawing'),box=svg.getBoundingClientRect();
+ document.dispatchEvent(new MouseEvent('mousemove',{clientX:box.x+5,clientY:box.y+5,ctrlKey:true}));
+ const overlay=document.querySelector('[title="Ctrl + drag to Filee"]'),data=new DataTransfer();
+ overlay.dispatchEvent(new DragEvent('dragstart',{ctrlKey:true,dataTransfer:data,bubbles:true}));
+ const exported=new DOMParser().parseFromString(data.getData('image/svg+xml'),'image/svg+xml');
+ check('gradient is a portable presentation attribute',exported.querySelector('rect').getAttribute('fill')==='url(#color-gradient)');
+ check('currentColor is resolved without CSS',exported.querySelectorAll('rect')[1].getAttribute('fill')==='rgb(35, 166, 121)');
+ check('gradient stops have explicit colors',exported.querySelector('stop').getAttribute('stop-color')==='rgb(76, 201, 240)');
+ const image=new Image();image.src=data.getData('text/uri-list');await image.decode();
+ const canvas=document.createElement('canvas');canvas.width=240;canvas.height=160;
+ const ctx=canvas.getContext('2d');ctx.drawImage(image,0,0);
+ const pixel=(x,y)=>[...ctx.getImageData(x,y,1,1).data];
+ const left=pixel(10,40),right=pixel(230,40),green=pixel(100,120);
+ check('gradient left remains cyan',left[1]>180 && left[2]>220 && left[3]===255);
+ check('gradient right remains blue',right[0]<90 && right[1]<120 && right[2]>220 && right[3]===255);
+ check('inherited currentColor remains green',green[0]===35 && green[1]===166 && green[2]===121 && green[3]===255);
+ overlay.dispatchEvent(new DragEvent('dragend'));
+} catch(error){results.push({pass:false,error:error.message});}
+document.querySelector('#results').textContent=JSON.stringify(results);
+})();
+</script>

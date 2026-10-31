@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Video source switching regression</title>
+<video style="width:300px;height:160px" src="https://example.test/old.mp4"></video><pre id="results"></pre>
+<script src="../extension/svg-drag.js"></script><script>
+const results=[], v=document.querySelector('video');
+const check=(name,pass)=>results.push({name,pass:!!pass});
+// Deterministically model the real Chrome load race: currentSrc remains the previous clip.
+Object.defineProperty(v,'currentSrc',{get:()=> 'https://example.test/old.mp4', configurable:true});
+function arm(){const r=v.getBoundingClientRect(); document.dispatchEvent(new MouseEvent('mousemove',{clientX:r.x+10,clientY:r.y+10,ctrlKey:true}));return document.querySelector('[title="Ctrl + drag to Filee"]');}
+function start(o){const data=new DataTransfer();const event=new DragEvent('dragstart',{ctrlKey:true,dataTransfer:data,bubbles:true,cancelable:true});o?.dispatchEvent(event);return {data,event};}
+function end(o){o?.dispatchEvent(new DragEvent('dragend'));}
+function test(src,expected){v.src=src;const o=arm(),{data}=start(o);check(src, expected ? data.getData('text/uri-list')===expected && !data.getData('DownloadURL') : !o);end(o);}
+test('https://example.test/new.mp4?signature=a&b=2','https://example.test/new.mp4?signature=a&b=2');
+test('https://example.test/live.m3u8',null);test('blob:https://example.test/1',null);test('https://example.test/stream?id=2',null);
+v.src='https://example.test/one.mp4';let o=arm();v.src='https://example.test/two.mp4';
+let result=start(o);check('change between hover and drag uses new URL',result.data.getData('text/uri-list').endsWith('/two.mp4'));end(o);
+v.src='https://example.test/one.mp4';o=arm();v.src='blob:https://example.test/1';result=start(o);
+check('unsupported change cancels already armed drag',result.event.defaultPrevented && !result.data.types.length);end(o);
+v.src='https://example.test/one.mp4';arm();v.src='https://example.test/three.mp4';o=arm();result=start(o);
+check('same element re-hover refreshes source',result.data.getData('text/uri-list').endsWith('/three.mp4'));end(o);
+v.removeAttribute('src');v.innerHTML='<source src="https://example.test/source.mp4" type="video/mp4">';o=arm();result=start(o);
+check('source child excludes stale currentSrc',result.data.getData('text/uri-list').endsWith('/source.mp4'));end(o);
+v.querySelector('source').src='https://example.test/source-new.mp4';o=arm();result=start(o);
+check('source child switch',result.data.getData('text/uri-list').endsWith('/source-new.mp4'));end(o);
+v.innerHTML='';o=arm();check('removed source does not use stale currentSrc',!o);end(o);
+document.querySelector('#results').textContent=JSON.stringify(results);
+</script>
